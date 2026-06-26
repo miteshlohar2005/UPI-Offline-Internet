@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>UPI Offline Mesh — Enterprise Dashboard</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Premium background elements -->
+    <div class="bg-gradient-top"></div>
+    <div class="bg-gradient-bottom"></div>
+    
+    <div class="dashboard-wrapper">
+        <header class="main-header">
+            <div class="brand">
+                <div class="logo-box"><i data-lucide="wifi-off"></i></div>
+                <h1>UPI Offline Mesh <span>Enterprise</span></h1>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="label">Mesh Status</span>
+                    <span class="value text-success"><span class="status-dot green"></span>Online</span>
+                </div>
+                <div class="header-stat">
+                    <span class="label">Active Nodes</span>
+                    <span class="value" id="headerNodeCount">0</span>
+                </div>
+                <div class="header-stat">
+                    <span class="label">Total Vol</span>
+                    <span class="value" id="headerTotalVol">₹0</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            
+            <!-- Left Column: Controls & Journey -->
+            <div class="col-left">
+                <!-- Action Controls -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="rocket"></i> Mission Control</h2>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-content">
+                            <label>Inject Payment</label>
+                            <div class="input-row">
+                                <select id="senderVpa" aria-label="Sender">
+                                    <option value="alice@demo">Alice</option>
+                                    <option value="bob@demo">Bob</option>
+                                    <option value="carol@demo">Carol</option>
+                                </select>
+                                <span class="arrow"><i data-lucide="arrow-right"></i></span>
+                                <select id="receiverVpa" aria-label="Receiver">
+                                    <option value="bob@demo">Bob</option>
+                                    <option value="carol@demo">Carol</option>
+                                    <option value="alice@demo">Alice</option>
+                                    <option value="dave@demo">Dave</option>
+                                </select>
+                            </div>
+                            <div class="input-row">
+                                <div class="input-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="amount" value="500" min="1" aria-label="Amount">
+                                </div>
+                                <div class="input-icon">
+                                    <span>PIN</span>
+                                    <input type="password" id="pin" value="1234" maxlength="4" aria-label="PIN">
+                                </div>
+                                <button class="btn btn-primary" id="btnInject">Inject</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group inline-actions">
+                        <button class="btn btn-secondary" id="btnGossip"><i data-lucide="repeat"></i> Gossip Round</button>
+                        <button class="btn btn-accent" id="btnFlush"><i data-lucide="upload-cloud"></i> Bridge Upload</button>
+                    </div>
+
+                    <div class="control-actions" style="margin-top:15px; border-top: 1px solid var(--border-color); padding-top:15px;">
+                        <button class="btn btn-outline-danger btn-sm" id="btnReset">Reset Mesh Topology</button>
+                    </div>
+                </section>
+
+                <!-- Payment Journey Tracker -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="map"></i> Payment Journey Tracker</h2>
+                        <span class="badge" id="journeyProgressText">Step 0 of 8</span>
+                    </div>
+                    <div class="journey-meta" style="display:none;" id="journeyMeta">
+                        <div class="meta-item"><span>Current Carrier:</span><strong id="journeyCarrier">-</strong></div>
+                        <div class="meta-item"><span>TTL:</span><strong id="journeyTTL">-</strong></div>
+                        <div class="meta-item"><span>Est. Completion:</span><strong id="journeyEst">-</strong></div>
+                    </div>
+                    <div class="vertical-tracker" id="journeyTracker">
+                        <div class="tracker-step" id="step1"><div class="tracker-icon"></div><div class="tracker-text">Payment Created</div></div>
+                        <div class="tracker-step" id="step2"><div class="tracker-icon"></div><div class="tracker-text">Payment Secured (Encrypted)</div></div>
+                        <div class="tracker-step" id="step3"><div class="tracker-icon"></div><div class="tracker-text">Searching Nearby Devices</div></div>
+                        <div class="tracker-step" id="step4"><div class="tracker-icon"></div><div class="tracker-text">Sending Through Offline Mesh</div></div>
+                        <div class="tracker-step" id="step5"><div class="tracker-icon"></div><div class="tracker-text">Bridge Device Found</div></div>
+                        <div class="tracker-step" id="step6"><div class="tracker-icon"></div><div class="tracker-text">Uploading Securely</div></div>
+                        <div class="tracker-step" id="step7"><div class="tracker-icon"></div><div class="tracker-text">Bank Verification</div></div>
+                        <div class="tracker-step" id="step8"><div class="tracker-icon"></div><div class="tracker-text">Payment Successful</div></div>
+                    </div>
+                </section>
+
+                <!-- Device Information Panel -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="smartphone"></i> Connected Devices</h2>
+                    </div>
+                    <div id="deviceList" class="device-list">
+                        <!-- Rendered by JS -->
+                    </div>
+                </section>
+                
+                <!-- Cybersecurity Dashboard -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="shield-check"></i> Cyber Security Info</h2>
+                    </div>
+                    <div class="cyber-grid">
+                        <div class="cyber-item">
+                            <label>RSA Keypair</label>
+                            <span class="status secure"><i data-lucide="key"></i> ACTIVE</span>
+                        </div>
+                        <div class="cyber-item">
+                            <label>Idempotency Cache</label>
+                            <span class="status info" id="cyberCacheSize"><i data-lucide="database"></i> 0 entries</span>
+                        </div>
+                        <div class="cyber-item">
+                            <label>AES-GCM Tamper Detect</label>
+                            <span class="status secure"><i data-lucide="lock"></i> ARMED</span>
+                        </div>
+                        <div class="cyber-item">
+                            <label>Replay Protection</label>
+                            <span class="status secure"><i data-lucide="check-circle"></i> ENABLED</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Middle Column: Topology & Core Info -->
+            <div class="col-middle">
+                <!-- Advanced Stats Cards -->
+                <section class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon text-blue"><i data-lucide="package"></i></div>
+                        <div class="stat-info"><span class="stat-label">Created</span><span class="stat-value" id="statCreated">0</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon text-success"><i data-lucide="check-circle-2"></i></div>
+                        <div class="stat-info"><span class="stat-label">Settled</span><span class="stat-value" id="statSettled">0</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon text-warning"><i data-lucide="copy-minus"></i></div>
+                        <div class="stat-info"><span class="stat-label">Dropped (Dup)</span><span class="stat-value" id="statDropped">0</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon text-purple"><i data-lucide="git-commit"></i></div>
+                        <div class="stat-info"><span class="stat-label">Avg Hops</span><span class="stat-value" id="statAvgHops">0.0</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon text-blue"><i data-lucide="radio-tower"></i></div>
+                        <div class="stat-info"><span class="stat-label">Bridge Uploads</span><span class="stat-value" id="statBridgeUploads">0</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon text-success"><i data-lucide="activity"></i></div>
+                        <div class="stat-info"><span class="stat-label">Success Rate</span><span class="stat-value" id="statSuccessRate">100%</span></div>
+                    </div>
+                </section>
+
+                <!-- Live Network Topology -->
+                <section class="panel topology-panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="network"></i> Live Mesh Topology</h2>
+                        <div class="legend">
+                            <span class="legend-item"><span class="dot green"></span> Bridge (4G)</span>
+                            <span class="legend-item"><span class="dot gray"></span> Offline Node</span>
+                        </div>
+                    </div>
+                    <div class="canvas-container" id="networkContainer">
+                        <canvas id="topologyCanvas"></canvas>
+                        <div class="backend-node" id="backendVisual"><i data-lucide="server"></i> Backend Settlement</div>
+                    </div>
+                </section>
+
+                <!-- Encryption Pipeline Visualization -->
+                <section class="panel" id="encryptionVizContainer" style="display: none;">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="lock"></i> Encryption Pipeline Activity</h2>
+                    </div>
+                    <div class="enc-pipeline" id="encryptionSteps">
+                        <div class="enc-step" id="enc-json"><i data-lucide="file-json"></i> JSON</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="enc-aes-gen"><i data-lucide="key-round"></i> AES Key</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="enc-aes-enc"><i data-lucide="file-lock-2"></i> AES Encrypt</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="enc-rsa"><i data-lucide="shield"></i> RSA Wrap</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="enc-mesh"><i data-lucide="box"></i> Packet</div>
+                    </div>
+                </section>
+                
+                <section class="panel" id="decryptionVizContainer" style="display: none;">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="unlock"></i> Decryption & Settlement Pipeline Activity</h2>
+                    </div>
+                    <div class="enc-pipeline" id="decryptionSteps">
+                        <div class="enc-step" id="dec-rsa"><i data-lucide="key"></i> RSA Decrypt</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="dec-aes"><i data-lucide="file-unlock-2"></i> AES Decrypt</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="dec-sha"><i data-lucide="fingerprint"></i> SHA256</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="dec-replay"><i data-lucide="history"></i> Replay Check</div>
+                        <div class="enc-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="enc-step" id="dec-settle"><i data-lucide="building-2"></i> Settle</div>
+                    </div>
+                </section>
+                
+                <!-- Account Balances -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="wallet"></i> Account Balances</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="accountsTable" class="data-table">
+                            <thead>
+                                <tr><th>VPA</th><th>Holder Name</th><th class="text-right">Balance</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Analytics & Timeline -->
+            <div class="col-right">
+                
+                <!-- Live Analytics Charts Grid -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="bar-chart-2"></i> Live Analytics</h2>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-wrapper">
+                            <div class="chart-title">Settlement Trend</div>
+                            <canvas id="chartSettlement"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div class="chart-title">Packet Distribution</div>
+                            <canvas id="chartDistribution"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div class="chart-title">Hop Count</div>
+                            <canvas id="chartHops"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div class="chart-title">Duplicate Detection</div>
+                            <canvas id="chartDuplicates"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div class="chart-title">Bridge Utilization</div>
+                            <canvas id="chartBridge"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div class="chart-title">Traffic Volume</div>
+                            <canvas id="chartVolume"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Timeline -->
+                <section class="panel timeline-panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="clock"></i> Enterprise Live Timeline</h2>
+                    </div>
+                    <div class="timeline-container" id="timeline">
+                        <div class="timeline-empty">System monitoring active...</div>
+                    </div>
+                </section>
+
+                <!-- Transaction Ledger -->
+                <section class="panel">
+                    <div class="panel-heading">
+                        <h2><i data-lucide="list"></i> Recent Ledger</h2>
+                    </div>
+                    <div class="table-responsive small-table">
+                        <table id="txTable" class="data-table">
+                            <thead>
+                                <tr><th>ID</th><th>From</th><th>To</th><th class="text-right">Amount</th><th>Status</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- Enhanced Packet Details Modal -->
+    <div id="packetModal" class="modal-overlay">
+        <div class="modal-content panel">
+            <button class="btn-icon modal-close" id="closeModal"><i data-lucide="x"></i></button>
+            <div class="modal-header">
+                <h2><i data-lucide="package-search"></i> Packet Inspection</h2>
+                <div class="status-badge" id="modalStatusBadge">UNKNOWN</div>
+            </div>
+            <div class="modal-body" id="packetDetailsContent">
+                <!-- Content filled by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="app.copyPacketData()"><i data-lucide="copy"></i> Copy Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script type="module" src="/js/app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
