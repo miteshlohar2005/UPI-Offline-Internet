@@ -384,6 +384,8 @@ I want this README to be useful to you when someone reviews the project, so let'
 
 For a college / portfolio project: name the concept honestly as **"mesh-routed deferred settlement"** rather than "real-time offline UPI," and you'll have a much stronger pitch. The cryptography and idempotency work here is real engineering and worth showing off.
 
+## Updated on 18 July 2026
+
 ---
 
 ## Troubleshooting
